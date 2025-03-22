@@ -7,11 +7,12 @@
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
-    <h1>🕶️ Hacker 3D avec IA</h1>
+    <h1>🕶️ Hacker 3D avec Synthèse Vocale</h1>
     <canvas id="scene"></canvas>
     <input type="text" id="userInput" placeholder="Posez une question...">
     <button onclick="sendMessage()">Envoyer</button>
     <p id="response"></p>
+    <audio id="audioPlayer" controls></audio>
 
     <script>
         const scene = new THREE.Scene();
@@ -32,7 +33,7 @@
             renderer.render(scene, camera);
         }
 
-        // Envoi de message à GPT-4
+        // Envoi de message à GPT-4 et récupération de l'audio
         function sendMessage() {
             let userMessage = document.getElementById("userInput").value;
             fetch("/ask", {
@@ -43,6 +44,11 @@
             .then(response => response.json())
             .then(data => {
                 document.getElementById("response").innerText = data.response;
+
+                // 🔊 Lecture de la voix générée
+                const audioPlayer = document.getElementById("audioPlayer");
+                audioPlayer.src = data.audio;
+                audioPlayer.play();
             });
         }
     </script>
