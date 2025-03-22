@@ -2,17 +2,18 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Hacker Avatar 3D</title>
+    <title>Hacker Avatar 3D avec Animation Faciale</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
-    <h1>🕶️ Hacker 3D avec Synthèse Vocale</h1>
+    <h1>🕶️ Hacker 3D Animé avec Synthèse Vocale</h1>
     <canvas id="scene"></canvas>
     <input type="text" id="userInput" placeholder="Posez une question...">
     <button onclick="sendMessage()">Envoyer</button>
     <p id="response"></p>
     <audio id="audioPlayer" controls></audio>
+    <video id="faceAnimation" width="300" height="300" autoplay loop></video>
 
     <script>
         const scene = new THREE.Scene();
@@ -33,7 +34,7 @@
             renderer.render(scene, camera);
         }
 
-        // Envoi de message à GPT-4 et récupération de l'audio
+        // Envoi du message à GPT-4 et récupération de l'animation
         function sendMessage() {
             let userMessage = document.getElementById("userInput").value;
             fetch("/ask", {
@@ -45,10 +46,13 @@
             .then(data => {
                 document.getElementById("response").innerText = data.response;
 
-                // 🔊 Lecture de la voix générée
+                // 🔊 Lecture de l'audio
                 const audioPlayer = document.getElementById("audioPlayer");
                 audioPlayer.src = data.audio;
                 audioPlayer.play();
+
+                // 🎭 Jouer l'animation faciale DeepMotion
+                document.getElementById("faceAnimation").src = data.animation;
             });
         }
     </script>
