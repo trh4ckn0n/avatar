@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Hacker Avatar 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <h1>🕶️ Hacker 3D avec IA</h1>
+    <canvas id="scene"></canvas>
+    <input type="text" id="userInput" placeholder="Posez une question...">
+    <button onclick="sendMessage()">Envoyer</button>
+    <p id="response"></p>
+
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("scene") });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Charger l'avatar 3D
+        const loader = new THREE.GLTFLoader();
+        loader.load('/static/hacker_avatar.glb', function (gltf) {
+            scene.add(gltf.scene);
+            animate();
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // Envoi de message à GPT-4
+        function sendMessage() {
+            let userMessage = document.getElementById("userInput").value;
+            fetch("/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMessage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("response").innerText = data.response;
+            });
+        }
+    </script>
+</body>
+</html>
