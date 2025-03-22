@@ -2,11 +2,12 @@ import bpy
 import openai
 import requests
 import os
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify
 import threading
 
 # --- CONFIGURATION ---
 api_key = "VOTRE_CLE_OPENAI"
+deepmotion_api_key = "VOTRE_CLE_DEEPMOTION"
 app = Flask(__name__)
 
 # --- 1️⃣ AVATAR 3D (Génération avec Blender) ---
@@ -39,11 +40,11 @@ def generate_texture():
         f.write(img_data)
     print("✅ Texture IA téléchargée :", texture_url)
 
-# --- 3️⃣ GPT-4 + SYNTHÈSE VOCALE ---
+# --- 3️⃣ GPT-4 + SYNTHÈSE VOCALE + ANIMATION FACIALE ---
 @app.route('/ask', methods=['POST'])
 def ask():
     user_message = request.json.get("message")
-    
+
     # 🔹 Génération de la réponse IA
     response = openai.ChatCompletion.create(
         model="gpt-4",
@@ -52,19 +53,32 @@ def ask():
     )
     bot_reply = response["choices"][0]["message"]["content"]
 
-    # 🔹 Synthèse Vocale (TTS OpenAI)
+    # 🔹 Génération de l'audio avec OpenAI TTS (choix de la voix)
+    voice_choice = "alloy"  # Peut être changé pour : "echo", "fable", "onyx", "nova", "shimmer"
     speech_response = openai.Audio.create(
         model="tts-1",
-        voice="alloy",  # Voix réaliste : "alloy", "echo", "fable", "onyx", "nova", "shimmer"
+        voice=voice_choice,
         input=bot_reply,
         api_key=api_key
     )
-    
+
     speech_file = "static/hacker_voice.mp3"
     with open(speech_file, "wb") as f:
         f.write(speech_response['data'])
 
-    return jsonify({"response": bot_reply, "audio": "/static/hacker_voice.mp3"})
+    # 🔹 Animation faciale avec DeepMotion
+    deepmotion_response = requests.post(
+        "https://api.deepmotion.com/animate",
+        headers={"Authorization": f"Bearer {deepmotion_api_key}"},
+        files={"audio": open(speech_file, "rb")}
+    )
+    facial_animation_url = deepmotion_response.json()["animation_url"]
+
+    return jsonify({
+        "response": bot_reply,
+        "audio": "/static/hacker_voice.mp3",
+        "animation": facial_animation_url
+    })
 
 # --- LANCEMENT DU SERVEUR ---
 def start_server():
